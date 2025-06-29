@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<Diary.Models.DiaryEntry>
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -7,6 +8,31 @@
     @if (User.Identity.IsAuthenticated)
     {
         <a asp-controller="Diary" asp-action="Add">Přidat nový záznam do deníku</a>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Název</th>
+                    <th>Typ</th>
+                    <th>Žánr</th>
+                    <th>Rok</th>
+                    <th>Přečteno/Shlédnuto</th>
+                    <th>Datum vytvoření</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model)
+                {
+                    <tr>
+                        <td>@entry.Title</td>
+                        <td>@entry.ResourceType</td>
+                        <td>@entry.Genre</td>
+                        <td>@entry.Year</td>
+                        <td>@(entry.IsRead ? "Ano" : "Ne")</td>
+                        <td>@entry.CreatedDate.ToShortDateString()</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     }
     else
     {

@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿
 using Microsoft.EntityFrameworkCore;
+using Diary.Models; 
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Diary.Data
 {
@@ -9,5 +11,7 @@ namespace Diary.Data
             : base(options)
         {
         }
+
+        public DbSet<DiaryEntry> DiaryEntries { get; set; }
     }
 }
