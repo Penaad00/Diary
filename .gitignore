@@ -1,0 +1,49 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosf
+*.sln.docstates
+
+# Binaries and Object files
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+*.dll
+*.exe
+*.pdb
+*.apk
+*.apc
+*.appx
+*.nupkg
+*.snk
+
+# Package files
+*.nupkg
+*.snk
+project.lock.json
+packages/
+node_modules/ # If you use npm/yarn for frontend packages
+
+# Build results
+[Aa]rtifacts/
+[Bb]uild/
+[Pp]ublish/
+
+# Database files (if local, file-based database)
+*.mdf
+*.ldf
+*.sdf
+*.db # For SQLite databases, if used directly as a file
+
+# Log files
+*.log
+
+# Test Results
+TestResults/
+
+# Misc
+.DS_Store # macOS specific
+Thumbs.db # Windows specific
+*.[Pp]roject.FileListAbsolute.txt
