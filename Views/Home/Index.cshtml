@@ -17,6 +17,8 @@
                     <th>Rok</th>
                     <th>Přečteno/Shlédnuto</th>
                     <th>Datum vytvoření</th>
+                    <th>Upravit</th>
+                    <th>Smazat</th>
                 </tr>
             </thead>
             <tbody>
@@ -29,6 +31,12 @@
                         <td>@entry.Year</td>
                         <td>@(entry.IsRead ? "Ano" : "Ne")</td>
                         <td>@entry.CreatedDate.ToShortDateString()</td>
+                        <td>
+                            <a class="table-hover text-dark"
+                               asp-controller="Diary" asp-action="Edit"
+                               asp-route-id="@entry.Id">Upravit</a>
+                        </td>
+                        <td><a class="table-hover text-decoration-none text-dark" asp-controller="Diary" asp-route-id="@entry.Id" asp-action="Remove">×</a></td>
                     </tr>
                 }
             </tbody>

@@ -1,17 +1,18 @@
 ﻿@model Diary.Models.DiaryEntry
 
 @{
-    ViewData["Title"] = "Přidání záznamu do uživatelského deníku";
+    ViewData["Title"] = "Upravit záznam v deníku";
 }
 
 <div class="text-center form-group">
     <h2>@ViewData["Title"]</h2>
 
-    <form method="post" asp-controller="Diary" asp-action="Add">
-        <fieldset>
+    <form method="post" asp-controller="Diary" asp-action="Edit">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CreatedDate" /> <input type="hidden" asp-for="Username" /> <fieldset>
             <legend>Typ záznamu:</legend>
             <label>
-                <input type="radio" id="TypeFilm" name="ResourceType" value="Film" asp-for="ResourceType" checked />
+                <input type="radio" id="TypeFilm" name="ResourceType" value="Film" asp-for="ResourceType" />
                 Film
             </label>
             <label>
@@ -63,14 +64,15 @@
             <label>Přečteno / Shlédnuto:</label>
             <input type="radio" id="IsReadYes" name="IsRead" value="true" asp-for="IsRead" />
             <label for="IsReadYes">Ano</label>
-            <input type="radio" id="IsReadNo" name="IsRead" value="false" asp-for="IsRead" checked  />
+            <input type="radio" id="IsReadNo" name="IsRead" value="false" asp-for="IsRead" />
             <label for="IsReadNo">Ne</label>
             <span asp-validation-for="IsRead" class="text-danger"></span>
         </div>
 
         <br />
 
-        <button type="submit" class="btn btn-primary">Uložit záznam</button>
+        <button type="submit" asp-action="SaveChanges" class="btn btn-primary">Uložit změny</button>
+        <a href="/" class="btn btn-secondary">Zpět na seznam</a>
 
     </form>
 </div>
