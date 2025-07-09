@@ -32,22 +32,21 @@
         <br />
 
         <div>
-            <label for="Genre">Žánr:</label>
-            <select id="Genre" name="Genre" asp-for="Genre" class="form-control">
-                <option value="">-- Vyberte žánr --</option>
-                <option value="Akční">Akční</option>
-                <option value="Komedie">Komedie</option>
-                <option value="Drama">Drama</option>
-                <option value="Sci-Fi">Sci-Fi</option>
-                <option value="Fantasy">Fantasy</option>
-                <option value="Horor">Horor</option>
-                <option value="Thriller">Thriller</option>
-                <option value="Romantický">Romantický</option>
-                <option value="Dokumentární">Dokumentární</option>
-                <option value="Ostatní">Ostatní</option>
+            <label for="selectedGenreIds">Žánry:</label>
+            <select id="selectedGenreIds" name="selectedGenreIds" multiple class="form-control">
+                <option value="1">Akční</option>
+                <option value="2">Komedie</option>
+                <option value="3">Drama</option>
+                <option value="4">Sci-Fi</option>
+                <option value="5">Fantasy</option>
+                <option value="6">Horor</option>
+                <option value="7">Thriller</option>
+                <option value="8">Romantický</option>
+                <option value="9">Dokumentární</option>
+                <option value="10">Ostatní</option>
             </select>
-            <span asp-validation-for="Genre" class="text-danger"></span>
         </div>
+
 
         <br />
 
@@ -63,7 +62,7 @@
             <label>Přečteno / Shlédnuto:</label>
             <input type="radio" id="IsReadYes" name="IsRead" value="true" asp-for="IsRead" />
             <label for="IsReadYes">Ano</label>
-            <input type="radio" id="IsReadNo" name="IsRead" value="false" asp-for="IsRead" checked  />
+            <input type="radio" id="IsReadNo" name="IsRead" value="false" asp-for="IsRead" checked />
             <label for="IsReadNo">Ne</label>
             <span asp-validation-for="IsRead" class="text-danger"></span>
         </div>

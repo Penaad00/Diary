@@ -27,18 +27,29 @@ namespace Diary.Controllers
             return View();
         }
 
-        public IActionResult Search()
+        public async Task<IActionResult> Search()
         {
-            return View();
+            var userId = _userManager.GetUserId(User);
+            var entries = await _dbContext.DiaryEntries
+                .Where(e => e.Username == userId)
+                .Include(e => e.Genres)
+                .ToListAsync();
+
+            return View(entries);
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> Add(DiaryEntry model)
+        public async Task<IActionResult> Add(DiaryEntry model, List<int> selectedGenreIds)
         {
             if (ModelState.IsValid)
             {
                 var userId = _userManager.GetUserId(User);
                 model.Username = userId;
+
+                model.Genres = await _dbContext.Genres
+                    .Where(g => selectedGenreIds.Contains(g.Id))
+                    .ToListAsync();
 
                 _dbContext.DiaryEntries.Add(model);
                 await _dbContext.SaveChangesAsync();
@@ -50,6 +61,7 @@ namespace Diary.Controllers
                 return View(model);
             }
         }
+
 
         public async Task<IActionResult> Edit(int? id)
         {
@@ -87,8 +99,20 @@ namespace Diary.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchUser(string searchUser)
         {
-            
-            return RedirectToAction("Index", "Home");
+            var user = await _userManager.FindByNameAsync(searchUser);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var userId = user.Id;
+
+            var diaryEntries = await _dbContext.DiaryEntries
+                .Where(entry => entry.Username == userId)
+                .Include(entry => entry.Genres)
+                .ToListAsync();
+
+            return View("ViewSearch", diaryEntries);
         }
 
 

@@ -21,23 +21,25 @@
                     <th>Smazat</th>
                 </tr>
             </thead>
-            <tbody>
+                <tbody>
                 @foreach (var entry in Model)
                 {
-                    <tr>
-                        <td>@entry.Title</td>
-                        <td>@entry.ResourceType</td>
-                        <td>@entry.Genre</td>
-                        <td>@entry.Year</td>
-                        <td>@(entry.IsRead ? "Ano" : "Ne")</td>
-                        <td>@entry.CreatedDate.ToShortDateString()</td>
-                        <td>
-                            <a class="table-hover text-dark"
-                               asp-controller="Diary" asp-action="Edit"
-                               asp-route-id="@entry.Id">Upravit</a>
-                        </td>
-                        <td><a class="table-hover text-decoration-none text-dark" asp-controller="Diary" asp-route-id="@entry.Id" asp-action="Remove">×</a></td>
-                    </tr>
+                <tr>
+                    <td>@entry.Title</td>
+                    <td>@entry.ResourceType</td>
+                    <td>@string.Join(", ", entry.Genres.Select(g => g.Name))</td>
+                    <td>@entry.Year</td>
+                    <td>@(entry.IsRead ? "Ano" : "Ne")</td>
+                    <td>@entry.CreatedDate.ToShortDateString()</td>
+                    <td>
+                        <a class="table-hover text-dark"
+                           asp-controller="Diary" asp-action="Edit"
+                           asp-route-id="@entry.Id">Upravit</a>
+                    </td>
+                    <td>
+                        <a class="table-hover text-decoration-none text-dark" asp-controller="Diary" asp-route-id="@entry.Id" asp-action="Remove">×</a>
+                    </td>
+                </tr>
                 }
             </tbody>
         </table>

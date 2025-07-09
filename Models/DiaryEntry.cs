@@ -17,7 +17,7 @@ namespace Diary.Models
         public string ResourceType { get; set; }
 
         [Required(ErrorMessage = "Musíte vybrat žánr.")]
-        public string Genre { get; set; }
+        public List<Genre> Genres { get; set; } = new();
 
         [Required(ErrorMessage = "Rok vydání je povinný.")]
         [Range(0, 2050, ErrorMessage = "Rok musí být mezi 0 - 2050.")]

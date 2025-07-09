@@ -1,0 +1,30 @@
+﻿@model IEnumerable<Diary.Models.DiaryEntry>
+@{
+    ViewData["Title"] = "Search view";
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Název</th>
+            <th>Typ</th>
+            <th>Žánr</th>
+            <th>Rok</th>
+            <th>Přečteno/Shlédnuto</th>
+            <th>Datum vytvoření</th>
+        </tr>
+    </thead>
+    <tbody>
+                @foreach (var entry in Model)
+                {
+                <tr>
+                    <td>@entry.Title</td>
+                    <td>@entry.ResourceType</td>
+                    <td>@string.Join(", ", entry.Genres.Select(g => g.Name))</td>
+                    <td>@entry.Year</td>
+                    <td>@(entry.IsRead ? "Ano" : "Ne")</td>
+                    <td>@entry.CreatedDate.ToShortDateString()</td>
+                </tr>
+                }
+            </tbody>
+</table>

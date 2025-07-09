@@ -24,10 +24,13 @@ namespace Diary.Controllers
         {
             var userId = _userManager.GetUserId(User);
 
-            List<DiaryEntry> diaryEntries;
+            var diaryEntries = await _dbContext.DiaryEntries
+                .Where(entry => entry.Username == userId)
+                .Include(e => e.Genres)
+                .ToListAsync();
 
-            diaryEntries = await _dbContext.DiaryEntries.Where(entry => entry.Username == userId).ToListAsync();
             return View(diaryEntries);
+
         }
 
         public IActionResult Privacy()
