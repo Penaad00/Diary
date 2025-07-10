@@ -3,6 +3,7 @@ using Diary.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Diary.Controllers
 {
@@ -65,12 +66,46 @@ namespace Diary.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            var diaryEntry = await _dbContext.DiaryEntries.FindAsync(id);
+            if (id == null) return NotFound();
 
-            var currentUserId = _userManager.GetUserId(User);
+            var diaryEntry = await _dbContext.DiaryEntries
+                .Include(e => e.Genres)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (diaryEntry == null) return NotFound();
+
+            ViewBag.AllGenres = await _dbContext.Genres.ToListAsync();
+            ViewBag.SelectedGenreIds = diaryEntry.Genres.Select(g => g.Id).ToList();
 
             return View(diaryEntry);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateEntry(DiaryEntry model, List<int> selectedGenreIds)
+        {
+            var entryToUpdate = await _dbContext.DiaryEntries
+                .Include(e => e.Genres)
+                .FirstOrDefaultAsync(e => e.Id == model.Id);
+
+
+            entryToUpdate.Title = model.Title;
+            entryToUpdate.Year = model.Year;
+            entryToUpdate.IsRead = model.IsRead;
+            entryToUpdate.ResourceType = model.ResourceType;
+
+            entryToUpdate.Genres.Clear();
+            var selectedGenres = await _dbContext.Genres.Where(g => selectedGenreIds.Contains(g.Id)).ToListAsync();
+            foreach (var genre in selectedGenres)
+            {
+                entryToUpdate.Genres.Add(genre);
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Home");
+        }
+
+
 
         [HttpPost]
         public async Task<IActionResult> SaveChanges(DiaryEntry model)
@@ -114,6 +149,33 @@ namespace Diary.Controllers
 
             return View("ViewSearch", diaryEntries);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportToJson()
+        {
+            var userId = _userManager.GetUserId(User);
+            var entries = await _dbContext.DiaryEntries
+                .Where(e => e.Username == userId)
+                .Include(e => e.Genres)
+                .ToListAsync();
+
+            var exportData = entries.Select(e => new
+            {
+                e.Title,
+                e.Year,
+                e.ResourceType,
+                e.IsRead,
+                Genres = e.Genres.Select(g => new { g.Id, g.Name }).ToList()
+            });
+
+            var json = System.Text.Json.JsonSerializer.Serialize(exportData, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true //pro lepší čitelnost
+            });
+
+            return Content(json, "application/json");
+        }
+
 
 
     }

@@ -7,7 +7,7 @@
 <div class="text-center form-group">
     <h2>@ViewData["Title"]</h2>
 
-    <form method="post" asp-controller="Diary" asp-action="Edit">
+    <form method="post" asp-controller="Diary" asp-action="UpdateEntry">
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="CreatedDate" /> <input type="hidden" asp-for="Username" /> <fieldset>
             <legend>Typ záznamu:</legend>
@@ -35,18 +35,16 @@
         <div>
             <label for="selectedGenreIds">Žánry:</label>
             <select id="selectedGenreIds" name="selectedGenreIds" multiple class="form-control">
-                <option value="1">Akční</option>
-                <option value="2">Komedie</option>
-                <option value="3">Drama</option>
-                <option value="4">Sci-Fi</option>
-                <option value="5">Fantasy</option>
-                <option value="6">Horor</option>
-                <option value="7">Thriller</option>
-                <option value="8">Romantický</option>
-                <option value="9">Dokumentární</option>
-                <option value="10">Ostatní</option>
+                @foreach (var genre in (List<Genre>)ViewBag.AllGenres)
+                {
+                    var selectedIds = (List<int>)ViewBag.SelectedGenreIds;
+                    <option value="@genre.Id" selected="@(selectedIds.Contains(genre.Id) ? "selected" : null)">
+                        @genre.Name
+                    </option>
+                }
             </select>
         </div>
+
 
 
         <br />
@@ -70,7 +68,7 @@
 
         <br />
 
-        <button type="submit" asp-action="SaveChanges" class="btn btn-primary">Uložit změny</button>
+        <button type="submit" class="btn btn-primary">Uložit změny</button>
         <a href="/" class="btn btn-secondary">Zpět na seznam</a>
 
     </form>
