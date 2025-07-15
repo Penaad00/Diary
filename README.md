@@ -5,3 +5,4 @@ Webová aplikace která slouží jako deník knih/filmů
 - **Úprava záznamů**
 - **Nahlížení do jiných deníků**
 - **Filtrace záznamů**
+- **Export do formátu JSON**
