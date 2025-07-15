@@ -23,10 +23,27 @@ namespace Diary.Controllers
             return View();
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(bool isRead)
         {
-            return View();
+            var userId = _userManager.GetUserId(User);
+
+            var query = _dbContext.DiaryEntries
+                .Include(e => e.Genres)
+                .Where(e => e.Username == userId);
+
+            if (isRead == true)
+            {
+                query = query.Where(e => e.IsRead == true);
+            }
+            else if (isRead == false)
+            {
+                query = query.Where(e => e.IsRead == false);
+            }
+            var entries = await query.ToListAsync();
+
+            return View("~/Views/Home/Index.cshtml", entries);
         }
+
 
         public async Task<IActionResult> Search()
         {

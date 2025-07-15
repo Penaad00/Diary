@@ -21,25 +21,25 @@
                     <th>Smazat</th>
                 </tr>
             </thead>
-                <tbody>
+            <tbody>
                 @foreach (var entry in Model)
                 {
-                <tr>
-                    <td>@entry.Title</td>
-                    <td>@entry.ResourceType</td>
-                    <td>@string.Join(", ", entry.Genres.Select(g => g.Name))</td>
-                    <td>@entry.Year</td>
-                    <td>@(entry.IsRead ? "Ano" : "Ne")</td>
-                    <td>@entry.CreatedDate.ToShortDateString()</td>
-                    <td>
-                        <a class="table-hover text-dark"
-                           asp-controller="Diary" asp-action="Edit"
-                           asp-route-id="@entry.Id">Upravit</a>
-                    </td>
-                    <td>
-                        <a class="table-hover text-decoration-none text-dark" asp-controller="Diary" asp-route-id="@entry.Id" asp-action="Remove">×</a>
-                    </td>
-                </tr>
+                    <tr>
+                        <td>@entry.Title</td>
+                        <td>@entry.ResourceType</td>
+                        <td>@string.Join(", ", entry.Genres.Select(g => g.Name))</td>
+                        <td>@entry.Year</td>
+                        <td>@(entry.IsRead ? "Ano" : "Ne")</td>
+                        <td>@entry.CreatedDate.ToShortDateString()</td>
+                        <td>
+                            <a class="table-hover text-dark"
+                               asp-controller="Diary" asp-action="Edit"
+                               asp-route-id="@entry.Id">Upravit</a>
+                        </td>
+                        <td>
+                            <a class="table-hover text-decoration-none text-dark" asp-controller="Diary" asp-route-id="@entry.Id" asp-action="Remove">×</a>
+                        </td>
+                    </tr>
                 }
             </tbody>
         </table>
@@ -48,10 +48,30 @@
                 Exportovat záznamy do JSON
             </a>
         </div>
+        <br />
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Filtrovat podle stavu
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                <li><button class="dropdown-item" onclick="filterAll()">Vše</button></li>
+                <li><button class="dropdown-item" onclick="filterRead(true)">Přečteno / Zhlédnuto</button></li>
+                <li><button class="dropdown-item" onclick="filterRead(false)">Nepřečteno / Nezhlédnuto</button></li>
+            </ul>
+        </div>
     }
     else
     {
         <p>Pro zobrazení deníku je nutné se přihlásit</p>
     }
-    
+
 </div>
+
+<script>
+    function filterAll() {
+        window.location.href = '/Home/Index';
+    }
+    function filterRead(value) {
+        window.location.href = '/Diary/Index?isRead=' + value;
+    }
+</script>
