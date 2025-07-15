@@ -63,7 +63,6 @@ namespace Diary.Controllers
             }
         }
 
-
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -175,8 +174,5 @@ namespace Diary.Controllers
 
             return Content(json, "application/json");
         }
-
-
-
     }
 }
