@@ -20,18 +20,33 @@ namespace Diary.Controllers
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
+        // Základní stránka se seznamem záznamù
+        public async Task<IActionResult> Index(bool? isRead = null)
         {
             var userId = _userManager.GetUserId(User);
 
-            var diaryEntries = await _dbContext.DiaryEntries
-                .Where(entry => entry.Username == userId)
+            var query = _dbContext.DiaryEntries
                 .Include(e => e.Genres)
+                .Where(e => e.Username == userId);
+
+            if (isRead.HasValue)
+            {
+                query = query.Where(e => e.IsRead == isRead.Value);
+            }
+
+            var entries = await query.ToListAsync();
+
+            var favoriteIds = await _dbContext.FavoriteEntries
+                .Where(f => f.UserId == userId)
+                .Select(f => f.DiaryEntryId)
                 .ToListAsync();
 
-            return View(diaryEntries);
+            ViewBag.FavoriteIds = favoriteIds;
+            ViewBag.IsReadFilter = isRead;
 
+            return View(entries);
         }
+
 
         public IActionResult Privacy()
         {
@@ -43,6 +58,5 @@ namespace Diary.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
     }
 }

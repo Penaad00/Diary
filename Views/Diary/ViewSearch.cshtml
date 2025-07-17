@@ -15,16 +15,52 @@
         </tr>
     </thead>
     <tbody>
-                @foreach (var entry in Model)
-                {
-                <tr>
-                    <td>@entry.Title</td>
-                    <td>@entry.ResourceType</td>
-                    <td>@string.Join(", ", entry.Genres.Select(g => g.Name))</td>
-                    <td>@entry.Year</td>
-                    <td>@(entry.IsRead ? "Ano" : "Ne")</td>
-                    <td>@entry.CreatedDate.ToShortDateString()</td>
-                </tr>
-                }
-            </tbody>
+        @foreach (var entry in Model)
+        {
+            <tr>
+                <td>@entry.Title</td>
+                <td>@entry.ResourceType</td>
+                <td>@string.Join(", ", entry.Genres.Select(g => g.Name))</td>
+                <td>@entry.Year</td>
+                <td>@(entry.IsRead ? "Ano" : "Ne")</td>
+                <td>@entry.CreatedDate.ToShortDateString()</td>
+            </tr>
+
+            <tr>
+                <td colspan="6">
+                    <strong>Komentáře:</strong>
+                    <ul>
+                        @{
+                            var entryComments = ViewBag.Comments != null
+                            ? ((List<Diary.Models.Comment>)ViewBag.Comments)
+                            .Where(c => c.DiaryEntryId == entry.Id)
+                            .ToList()
+                            : new List<Diary.Models.Comment>();
+
+                            var userNames = ViewBag.UserNames as Dictionary<string, string>;
+                        }
+
+                        @foreach (var comment in entryComments)
+                        {
+                            var userName = userNames != null && userNames.ContainsKey(comment.UserId)
+                            ? userNames[comment.UserId]
+                            : "Neznámý uživatel";
+
+                            <li>
+                                <strong>@userName</strong> napsal @comment.CreatedAt.ToLocalTime().ToString("g"):
+                                <p>@comment.Content</p>
+                            </li>
+                        }
+                    </ul>
+
+
+                    <form asp-action="AddComment" method="post">
+                        <input type="hidden" name="diaryEntryId" value="@entry.Id" />
+                        <textarea name="content" class="form-control" placeholder="Napiš komentář..."></textarea>
+                        <button type="submit" class="btn btn-sm btn-primary mt-1">Odeslat</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>

@@ -4,6 +4,7 @@ using Diary.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Diary.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250717151313_AddFavoriteEntry")]
+    partial class AddFavoriteEntry
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,6 +57,33 @@ namespace Diary.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DiaryEntries");
+                });
+
+            modelBuilder.Entity("Diary.Models.FavoriteEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiaryEntryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FavoritedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DiaryEntryId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FavoriteEntries");
                 });
 
             modelBuilder.Entity("Diary.Models.Genre", b =>
@@ -288,6 +318,25 @@ namespace Diary.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Diary.Models.FavoriteEntry", b =>
+                {
+                    b.HasOne("Diary.Models.DiaryEntry", "DiaryEntry")
+                        .WithMany()
+                        .HasForeignKey("DiaryEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DiaryEntry");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DiaryEntryGenre", b =>

@@ -1,10 +1,12 @@
 ﻿@model IEnumerable<Diary.Models.DiaryEntry>
 @{
     ViewData["Title"] = "Home Page";
+    var favoriteIds = ViewBag.FavoriteIds as List<int>;
+    bool? currentFilter = ViewBag.IsReadFilter as bool?;
 }
 
 <div class="text-center">
-    <h1 class="display-4">Deník</h1>
+    <h1 class="display-4">Správa deníku</h1>
     @if (User.Identity.IsAuthenticated)
     {
         <a asp-controller="Diary" asp-action="Add">Přidat nový záznam do deníku</a>
@@ -19,11 +21,13 @@
                     <th>Datum vytvoření</th>
                     <th>Upravit</th>
                     <th>Smazat</th>
+                    <th>Oblíbené</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var entry in Model)
                 {
+                    var isFavorited = favoriteIds != null && favoriteIds.Contains(entry.Id);
                     <tr>
                         <td>@entry.Title</td>
                         <td>@entry.ResourceType</td>
@@ -38,6 +42,16 @@
                         </td>
                         <td>
                             <a class="table-hover text-decoration-none text-dark" asp-controller="Diary" asp-route-id="@entry.Id" asp-action="Remove">×</a>
+                        </td>
+                        <td>
+                            <form asp-controller="Diary" asp-action="ToggleFavorite" method="post" style="display:inline">
+                                <input type="hidden" name="entryId" value="@entry.Id" />
+                                <input type="hidden" name="isRead" value="@(currentFilter.HasValue ? currentFilter.Value.ToString() : "")" />
+                                <button type="submit" class="btn btn-sm @(isFavorited ? "btn-danger" : "btn-outline-primary")"
+                                        title="@(isFavorited ? "Odebrat z oblíbených" : "Přidat do oblíbených")">
+                                    @(isFavorited ? "★" : "☆")
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 }
@@ -64,14 +78,14 @@
     {
         <p>Pro zobrazení deníku je nutné se přihlásit</p>
     }
-
 </div>
 
 <script>
     function filterAll() {
-        window.location.href = '/Home/Index';
+        window.location.href = '/';
     }
     function filterRead(value) {
-        window.location.href = '/Diary/Index?isRead=' + value;
+        window.location.href = '/?isRead=' + value;
     }
+
 </script>

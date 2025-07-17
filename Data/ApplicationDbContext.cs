@@ -14,5 +14,12 @@ namespace Diary.Data
 
         public DbSet<DiaryEntry> DiaryEntries { get; set; }
         public DbSet<Genre> Genres { get; set; }
+
+        public DbSet<FavoriteEntry> FavoriteEntries { get; set; }
+
+        public DbSet<Comment> Comments { get; set; }
+        
+
+
     }
 }

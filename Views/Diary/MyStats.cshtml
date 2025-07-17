@@ -1,0 +1,13 @@
+﻿@model Diary.Models.UserStatistics
+
+@{
+    ViewData["Title"] = "Moje statistiky";
+}
+
+<h2>Moje statistiky</h2>
+
+<ul>
+    <li><strong>Počet záznamů:</strong> @Model.EntriesCount</li>
+    <li><strong>Přečteno knih:</strong> @Model.ReadBooksCount</li>
+    <li><strong>Shlédnuto filmů:</strong> @Model.SeenFilmsCount</li>
+</ul>

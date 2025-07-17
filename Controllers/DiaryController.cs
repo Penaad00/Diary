@@ -14,51 +14,20 @@ namespace Diary.Controllers
 
         public DiaryController(ApplicationDbContext dbContext, UserManager<IdentityUser> userManager)
         {
-            _dbContext = dbContext; 
+            _dbContext = dbContext;
             _userManager = userManager;
         }
 
-        public IActionResult Add()
+        // Zobrazí formulář pro přidání záznamu
+        public async Task<IActionResult> Add()
         {
+            ViewBag.AllGenres = await _dbContext.Genres.ToListAsync();
             return View();
         }
 
-        public async Task<IActionResult> Index(bool isRead)
-        {
-            var userId = _userManager.GetUserId(User);
-
-            var query = _dbContext.DiaryEntries
-                .Include(e => e.Genres)
-                .Where(e => e.Username == userId);
-
-            if (isRead == true)
-            {
-                query = query.Where(e => e.IsRead == true);
-            }
-            else if (isRead == false)
-            {
-                query = query.Where(e => e.IsRead == false);
-            }
-            var entries = await query.ToListAsync();
-
-            return View("~/Views/Home/Index.cshtml", entries);
-        }
-
-
-        public async Task<IActionResult> Search()
-        {
-            var userId = _userManager.GetUserId(User);
-            var entries = await _dbContext.DiaryEntries
-                .Where(e => e.Username == userId)
-                .Include(e => e.Genres)
-                .ToListAsync();
-
-            return View(entries);
-        }
-
-
+        // Přidání nového záznamu POST
         [HttpPost]
-        public async Task<IActionResult> Add(DiaryEntry model, List<int> selectedGenreIds)
+        public async Task<IActionResult> Add(DiaryEntry model, List<int> selectedGenreIds, bool? isRead = null)
         {
             if (ModelState.IsValid)
             {
@@ -73,14 +42,15 @@ namespace Diary.Controllers
                 await _dbContext.SaveChangesAsync();
 
                 return RedirectToAction("Index", "Home");
+
             }
-            else
-            {
-                return View(model);
-            }
+
+            ViewBag.AllGenres = await _dbContext.Genres.ToListAsync();
+            return View(model);
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        // Zobrazí formulář pro editaci záznamu
+        public async Task<IActionResult> Edit(int? id, bool? isRead = null)
         {
             if (id == null) return NotFound();
 
@@ -96,9 +66,17 @@ namespace Diary.Controllers
             return View(diaryEntry);
         }
 
+        // Uložení upraveného záznamu POST
         [HttpPost]
-        public async Task<IActionResult> UpdateEntry(DiaryEntry model, List<int> selectedGenreIds)
+        public async Task<IActionResult> UpdateEntry(DiaryEntry model, List<int> selectedGenreIds, bool? isRead = null)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.AllGenres = await _dbContext.Genres.ToListAsync();
+                ViewBag.SelectedGenreIds = selectedGenreIds;
+                return View("Edit", model);
+            }
+
             var entryToUpdate = await _dbContext.DiaryEntries
                 .Include(e => e.Genres)
                 .FirstOrDefaultAsync(e => e.Id == model.Id);
@@ -118,61 +96,69 @@ namespace Diary.Controllers
 
             await _dbContext.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Home", new { isRead = isRead });
+
         }
 
-
-
-        [HttpPost]
-        public async Task<IActionResult> SaveChanges(DiaryEntry model)
+        // Odstranění záznamu
+        public async Task<IActionResult> Remove(int? id, bool? isRead = null)
         {
-            _dbContext.Update(model);
-            await _dbContext.SaveChangesAsync();
-            return RedirectToAction("Index", "Home");
-            
-        }
+            if (id == null) return NotFound();
 
-        public async Task<IActionResult> Remove(int? id)
-        {
             var diaryEntry = await _dbContext.DiaryEntries.FindAsync(id);
-
-            if (diaryEntry == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            if (diaryEntry == null) return NotFound();
 
             _dbContext.DiaryEntries.Remove(diaryEntry);
             await _dbContext.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Home", new { isRead = isRead });
+
         }
 
+        // Přepne oblíbený záznam
         [HttpPost]
-        public async Task<IActionResult> SearchUser(string searchUser)
+        public async Task<IActionResult> ToggleFavorite(int entryId, bool? isRead = null)
         {
-            var user = await _userManager.FindByNameAsync(searchUser);
-            if (user == null)
+            var userId = _userManager.GetUserId(User);
+
+            var existing = await _dbContext.FavoriteEntries
+                .FirstOrDefaultAsync(f => f.UserId == userId && f.DiaryEntryId == entryId);
+
+            if (existing != null)
             {
-                return NotFound();
+                _dbContext.FavoriteEntries.Remove(existing);
+            }
+            else
+            {
+                var favorite = new FavoriteEntry
+                {
+                    UserId = userId,
+                    DiaryEntryId = entryId,
+                    FavoritedAt = DateTime.UtcNow
+                };
+                _dbContext.FavoriteEntries.Add(favorite);
             }
 
-            var userId = user.Id;
+            await _dbContext.SaveChangesAsync();
 
-            var diaryEntries = await _dbContext.DiaryEntries
-                .Where(entry => entry.Username == userId)
-                .Include(entry => entry.Genres)
-                .ToListAsync();
+            return RedirectToAction("Index", "Home", new { isRead = isRead });
 
-            return View("ViewSearch", diaryEntries);
         }
 
+        // Export do JSON
         [HttpGet]
         public async Task<IActionResult> ExportToJson()
         {
             var userId = _userManager.GetUserId(User);
+
             var entries = await _dbContext.DiaryEntries
                 .Where(e => e.Username == userId)
                 .Include(e => e.Genres)
+                .ToListAsync();
+
+            var favoriteEntryIds = await _dbContext.FavoriteEntries
+                .Where(f => f.UserId == userId)
+                .Select(f => f.DiaryEntryId)
                 .ToListAsync();
 
             var exportData = entries.Select(e => new
@@ -181,15 +167,143 @@ namespace Diary.Controllers
                 e.Year,
                 e.ResourceType,
                 e.IsRead,
-                Genres = e.Genres.Select(g => new { g.Id, g.Name }).ToList()
+                Genres = e.Genres.Select(g => new { g.Id, g.Name }).ToList(),
+                IsFavorite = favoriteEntryIds.Contains(e.Id)
             });
 
-            var json = System.Text.Json.JsonSerializer.Serialize(exportData, new System.Text.Json.JsonSerializerOptions
-            {
-                WriteIndented = true //pro lepší čitelnost
-            });
+            var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
 
             return Content(json, "application/json");
         }
+
+        public IActionResult Search()
+        {
+            return View();
+        }
+
+        // Vrátí ViewSearch s aktuálně přihlášeným uživatelem
+        public async Task<IActionResult> SearchMe()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                ViewBag.Comments = new List<Comment>();
+                ViewBag.UserNames = new Dictionary<string, string>();
+                return View("ViewSearch", new List<DiaryEntry>());
+            }
+
+            var entries = await _dbContext.DiaryEntries
+                .Include(e => e.Genres)
+                .Where(e => e.Username == user.Id)
+                .ToListAsync();
+
+            var entryIds = entries.Select(e => e.Id).ToList();
+
+            var comments = await _dbContext.Comments
+                .Where(c => entryIds.Contains(c.DiaryEntryId))
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+
+            var userIds = comments.Select(c => c.UserId).Distinct();
+
+            var userNamesDict = await _userManager.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u.UserName);
+
+            ViewBag.Comments = comments;
+            ViewBag.UserNames = userNamesDict;
+
+            return View("ViewSearch", entries);
+        }
+
+
+        // Vrátí ViewSearch podle zadaného uživatele
+        [HttpPost]
+        public async Task<IActionResult> SearchUser(string searchUser)
+        {
+            var user = await _userManager.FindByNameAsync(searchUser);
+            if (user == null)
+            {
+                ViewBag.Comments = new List<Comment>();
+                ViewBag.UserNames = new Dictionary<string, string>();
+                return View("ViewSearch", new List<DiaryEntry>());
+            }
+
+            var entries = await _dbContext.DiaryEntries
+                .Include(e => e.Genres)
+                .Where(e => e.Username == user.Id)
+                .ToListAsync();
+
+            var entryIds = entries.Select(e => e.Id).ToList();
+
+            var comments = await _dbContext.Comments
+                .Where(c => entryIds.Contains(c.DiaryEntryId))
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+
+            var userIds = comments.Select(c => c.UserId).Distinct();
+
+            var userNamesDict = await _userManager.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u.UserName);
+
+            ViewBag.Comments = comments;
+            ViewBag.UserNames = userNamesDict;
+
+            return View("ViewSearch", entries);
+        }
+
+
+        // Přidání komentáře
+        [HttpPost]
+        public async Task<IActionResult> AddComment(int diaryEntryId, string content)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            if (userId == null)
+            {
+                return RedirectToAction("Search");
+            }
+
+            if (string.IsNullOrWhiteSpace(content))
+                return RedirectToAction("Search");
+
+            var comment = new Comment
+            {
+                UserId = userId,
+                DiaryEntryId = diaryEntryId,
+                Content = content,
+                CreatedAt = DateTime.Now
+            };
+
+            _dbContext.Comments.Add(comment);
+            await _dbContext.SaveChangesAsync();
+
+            return RedirectToAction("Search");
+        }
+
+        // Vrátí stránku s statistikami
+        public async Task<IActionResult> MyStats()
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var entries = await _dbContext.DiaryEntries
+                .Where(e => e.Username == userId)
+                .ToListAsync();
+
+            var statistics = new UserStatistics
+            {
+                UserId = userId,
+                EntriesCount = entries.Count,
+                ReadBooksCount = entries.Count(e => e.IsRead && e.ResourceType == "Kniha"),
+                SeenFilmsCount = entries.Count(e => e.IsRead && e.ResourceType == "Film")
+            };
+
+            return View(statistics);
+        }
+
+
+
+
     }
 }
