@@ -6,3 +6,6 @@ Webová aplikace která slouží jako deník knih/filmů
 - **Nahlížení do jiných deníků**
 - **Filtrace záznamů**
 - **Export do formátu JSON**
+- **Komentování cizích záznamů**
+- **Statistiky**
+
