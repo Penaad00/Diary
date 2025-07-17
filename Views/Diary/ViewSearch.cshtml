@@ -42,9 +42,7 @@
 
                         @foreach (var comment in entryComments)
                         {
-                            var userName = userNames != null && userNames.ContainsKey(comment.UserId)
-                            ? userNames[comment.UserId]
-                            : "Neznámý uživatel";
+                            var userName = userNames[comment.UserId];
 
                             <li>
                                 <strong>@userName</strong> napsal @comment.CreatedAt.ToLocalTime().ToString("g"):

@@ -11,8 +11,6 @@ namespace Diary.Models
         [StringLength(100, ErrorMessage = "Název nesmí být delší než 100 znaků.")]
         public string Title { get; set; }
 
-        // Vlastnost 'Content' byla odstraněna
-
         [Required(ErrorMessage = "Musíte vybrat typ záznamu.")]
         public string ResourceType { get; set; }
 
